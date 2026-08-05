@@ -8,16 +8,50 @@ namespace Sandbox
 
     public class Tests : PageTest
     {
+        public void Setup()
+        {
+            // This method is called before each test. You can use it to set up any necessary state or configuration.
+        }
+
         [Test]
         public async Task WebInput()
         {
+            await Page.RouteAsync("**/*", async route =>
+            {
+                var url = route.Request.Url;
+
+                if (url.Contains("googleads") ||
+                    url.Contains("doubleclick") ||
+                    url.Contains("adservice"))
+                {
+                    await route.AbortAsync();
+                }
+                else
+                {
+                    await route.ContinueAsync();
+                }
+            });
+
             Tests.SetDefaultExpectTimeout(10000);
             await Page.GotoAsync("https://practice.expandtesting.com/");
-            var getBtn = Page.GetByText("Tips", new PageGetByTextOptions { Exact = true });
-            await Expect(getBtn).ToHaveAttributeAsync("href", "/tips");
+            //var getBtn = Page.GetByText("Tips", new PageGetByTextOptions { Exact = true });
+            //var getBtn = Page.Locator("a[href='/inputs']");
+            //var getBtn = Page.GetByRole(AriaRole.Link, new() { Name = "Try it out" }).Filter( new() { Has = Page.Locator("a[href='/my-ip']") });
+            //var getBtn = Page
+            //    .Locator("a[href='/inputs']")
+            //    .Filter( new() { HasText = "Try it out" });
+            var getBtn = GetButton("Try it out", "/inputs");
+            await Expect(getBtn).ToHaveAttributeAsync("href", "/inputs");
             await getBtn.ClickAsync();
-            await Expect(Page).ToHaveURLAsync("https://practice.expandtesting.com/tips");
-            await Page.WaitForTimeoutAsync(15000);
+            await Expect(Page).ToHaveURLAsync("https://practice.expandtesting.com/inputs");
+            //await Page.WaitForTimeoutAsync(15000);
+        }
+
+        public ILocator GetButton(string text, string href)
+        {
+            return Page
+                .Locator($"a[href='{href}']")
+                .Filter(new() { HasText = text });
         }
 
 
