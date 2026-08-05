@@ -1,9 +1,26 @@
-﻿namespace Sandbox
+﻿using Microsoft.Playwright;
+using Microsoft.Playwright.NUnit;
+
+namespace Sandbox
 {
     [Parallelizable(ParallelScope.Self)]
     [TestFixture]
+
     public class Tests : PageTest
     {
+        [Test]
+        public async Task WebInput()
+        {
+            Tests.SetDefaultExpectTimeout(10000);
+            await Page.GotoAsync("https://practice.expandtesting.com/");
+            var getBtn = Page.GetByText("Tips", new PageGetByTextOptions { Exact = true });
+            await Expect(getBtn).ToHaveAttributeAsync("href", "/tips");
+            await getBtn.ClickAsync();
+            await Expect(Page).ToHaveURLAsync("https://practice.expandtesting.com/tips");
+            await Page.WaitForTimeoutAsync(15000);
+        }
+
+
         [Test]
         public async Task HomepageHasPlaywrightInTitleAndGetStartedLinkLinkingtoTheIntroPage()
         {
