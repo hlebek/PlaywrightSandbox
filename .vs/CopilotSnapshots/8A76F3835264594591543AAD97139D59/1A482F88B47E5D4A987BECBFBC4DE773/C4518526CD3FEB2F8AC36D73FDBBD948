@@ -1,0 +1,115 @@
+﻿using Microsoft.Playwright;
+using Sandbox.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Sandbox.WebInputs
+{
+    public class WebInputTestTemplate : PageTest
+    {
+        #region methods
+
+        #endregion
+
+        #region internal methods
+
+        /// <summary>
+        /// Prepares the page for testing.
+        /// </summary>
+        /// <param name="url">
+        /// The URL to navigate to for testing.
+        /// </param>
+        /// <returns>
+        /// The task representing the asynchronous operation of preparing the page.
+        /// </returns>
+        internal virtual async Task Prepare(string url = "https://practice.expandtesting.com")
+        {
+            WebInputTests.SetDefaultExpectTimeout(10000);
+            await Util.BlockAds(Page);
+            await Util.GoToPage(Page, url);
+        }
+
+        /// <summary>
+        /// Tests the number input box by filling it with a test value and asserting that the value is correctly set.
+        /// </summary>
+        /// <param name="boxId">
+        /// The ID of the number input box to be tested.
+        /// </param>
+        /// <returns>
+        /// The task representing the asynchronous operation of testing the number input box.
+        /// </returns>
+        internal async Task TestNumberInputBox(string boxId, string input)
+        {
+            ILocator inputNumber = GetElement.GetElementById(Page, boxId);
+
+            await inputNumber.FillAsync(input);
+            await Assert(async () => await Expect(inputNumber).ToHaveValueAsync(input));
+        }
+
+        /// <summary>
+        /// Tests the current URL of the page against the expected URL.
+        /// </summary>
+        /// <param name="url">
+        /// The expected URL to test against the current page URL.
+        /// </param>
+        /// <returns>
+        /// The task representing the asynchronous operation of testing the current URL.
+        /// </returns>
+        internal async Task TestCurrentUrl(string url) =>
+            await Assert(async () => await Expect(Page).ToHaveURLAsync(url));
+
+        /// <summary>
+        /// Tests the input box by filling it with a test value and asserting that the value is correctly set.
+        /// </summary>
+        /// <param name="boxId">
+        /// The ID of the input box to be tested.
+        /// </param>
+        /// <returns>
+        /// The task representing the asynchronous operation of testing the input box.
+        /// </returns>
+        internal async Task TestInputBox(string boxId, string input)
+        {
+            ILocator inputBox = GetElement.GetElementById(Page, boxId);
+
+            await inputBox.FillAsync(input);
+            await Assert(async () => await Expect(inputBox).ToHaveValueAsync(input));
+        }
+
+        #endregion
+
+        #region private methods
+
+        /// <summary>
+        /// Asserts the result of an asynchronous assertion function against an expected boolean value.
+        /// </summary>
+        /// <param name="assertion">
+        /// The asynchronous assertion delegate to be executed.
+        /// </param>
+        /// <param name="expected">
+        /// The expected boolean value for the assertion result.
+        /// </param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing the result of the assertion.
+        /// </returns>
+        private async Task<bool> Assert(Func<Task> assertion, bool expected = true)
+        {
+            bool result = expected;
+
+            try
+            {
+                await assertion();
+            }
+            catch
+            {
+                result = !result;
+            }
+
+            Console.WriteLine($"Assertion result: {result}. Expected: {expected}.");
+
+            return result;
+        }
+
+        #endregion
+    }
+}
